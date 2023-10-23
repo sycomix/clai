@@ -14,10 +14,7 @@ from pytest_docker_tools import build, container
 def get_base_path():
     root_path = os.getcwd()
     print(root_path)
-    if 'test_integration' in root_path:
-        return '../'
-
-    return '.'
+    return '../' if 'test_integration' in root_path else '.'
 
 
 my_clai_installed_image = build(

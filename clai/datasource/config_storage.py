@@ -23,14 +23,12 @@ class ConfigStorage:
             return self.alternate_path
 
         base_dir = os.path.dirname(clai.datasource.__file__)
-        filename = os.path.join(base_dir, '../../configPlugins.json')
-        return filename
+        return os.path.join(base_dir, '../../configPlugins.json')
 
     def read_all_user_config(self) -> PluginConfigJson:
         with open(self.get_config_path(), "r") as json_file:
             loaded = json.load(json_file)
-            config_for_all_users = PluginConfigJson(**loaded)
-            return config_for_all_users
+            return PluginConfigJson(**loaded)
 
     def read_config(self, user_name: Optional[str] = None) -> PluginConfig:
         selected = None

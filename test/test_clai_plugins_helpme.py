@@ -22,11 +22,11 @@ class RetrievalAgentTest(unittest.TestCase):
     @unittest.skip("Need internet connection")
     def test_get_post_execute(self):
         action = self.agent.post_execute(state=self.state)
-        print("Input: {}".format(self.state.command))
+        print(f"Input: {self.state.command}")
         print("===========================")
-        print("Response: {}".format(action.suggested_command))
+        print(f"Response: {action.suggested_command}")
         print("===========================")
-        print("Explanation: {}".format(action.description))
+        print(f"Explanation: {action.description}")
         self.assertNotEqual(NOOP_COMMAND, action.suggested_command)
 
     @unittest.skip("Local testing")
@@ -37,14 +37,14 @@ class RetrievalAgentTest(unittest.TestCase):
     @unittest.skip("Local testing")
     def test_get_kc(self):
         kc_hits = self.agent.store.search("Permission denied", service='ibm_kc', size=1)
-        print("Got this result from the KnowledgeCenter: " + str(kc_hits))
+        print(f"Got this result from the KnowledgeCenter: {str(kc_hits)}")
         self.assertEqual(1, len(kc_hits))
 
         man_hits = self.agent.store.search(kc_hits[0]['summary'],
                                            service='manpages',
                                            size=10)
 
-        print("Got this result from the Manpages service: " + str(man_hits))
+        print(f"Got this result from the Manpages service: {str(man_hits)}")
         self.assertEqual('connect', man_hits['commands'][-1])
 
     @unittest.skip("Local testing")

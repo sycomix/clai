@@ -40,12 +40,12 @@ def get_command_tldr(cmd):
             line = line[1:]
             description.warning().append(line.strip() + '\n')
         elif line[0] == '>':    # Description line
-            line = ' ' + line[1:]
+            line = f' {line[1:]}'
             description.normal().append(line.strip() + '\n')
         elif line[0] == '-':    # Example line
             description.normal().append(line.strip() + '\n')
         elif line[0] == '`':    # Example command
-            line = ' ' + line[1:-1]
+            line = f' {line[1:-1]}'
             description.info().append(line.strip() + '\n')
 
     description.normal().append('summary provided by tldr package\n')

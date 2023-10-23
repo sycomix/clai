@@ -69,9 +69,5 @@ class PreferenceOrchestrator(Orchestrator):
                 return candidate[0]
 
         if force_response:
-            if cache_candidates:
-                return cache_candidates[0][0]
-
-            return None
-
+            return cache_candidates[0][0] if cache_candidates else None
         return None

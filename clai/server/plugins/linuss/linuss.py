@@ -42,14 +42,14 @@ class Linuss(Agent):
         params:list[Tuple(str)] = []
         suggestion:str = None
         explanations:list[str] = []
-        
+
         # Tokenize the command string
         tokens:list[str] = command.split()
         idx = 0
         max_idx = len(tokens)-1
         while (idx <= max_idx):
             token:str = tokens[idx]
-            
+
             # Case 1: Token is an option flag
             if re.match(r'-([\w_-]+)', token):
                 
@@ -57,25 +57,23 @@ class Linuss(Agent):
                 if idx < max_idx and not re.match(r'-([\w_-]+)', tokens[idx+1]):
                     next_token = tokens[idx+1]
                     params.append((token[1:],next_token))
-                    idx = idx + 1   # Don't double-process next token
-                
-                # Case 1b: Token is not followed by a non-option parameter
+                    idx += 1
+
                 else:
                     params.append((token[1:],None))
-            
-            # Case 2: Token is a non-option parameter
+
             elif token != cmd_key:
                 params.append((None,token))
-            
-            idx = idx + 1 # Move on to the next token
-            
+
+            idx += 1
+
         # If this command requires full command replacement, start the new
         # command string off with that
         if "" in options:
             suggestion = self.equivalencies[cmd_key][""]["equivalent"]
         else:
             suggestion = cmd_key
-        
+
         # Traverse the command from start to end
         for opt, arg in params:
             if opt is not None:
@@ -88,7 +86,7 @@ class Linuss(Agent):
                             explanations.append(equivalency['explanation'])
                     else:
                         explanations.append(f"The -{opt} flag is not available on USS")
-                
+
                 # Case 2: We're processing multiple short options strung together
                 else:
                     for char in opt:
@@ -99,12 +97,12 @@ class Linuss(Agent):
                                 explanations.append(equivalency['explanation'])
                         else:
                             explanations.append(f"The -{char} flag is not available on USS")
-            
+
             # If we have another non-option parameter to add to the suggested
             # command, do so now
             if arg is not None:
                 suggestion = f"{suggestion} {arg}"
-        
+
         if suggestion is not None:
             return Action(
                 suggested_command=suggestion,
@@ -119,9 +117,9 @@ class Linuss(Agent):
         for option in options:
             if option == "":
                 pass    # Ignore full-command replacement options
-            elif re.search(r'{}'.format(option), target):
+            elif re.search(f'{option}', target):
                 return self.equivalencies[cmd_key][option]
-        
+
         return {"equivalent": target}
         
     def get_next_action(self, state: State) -> Action:

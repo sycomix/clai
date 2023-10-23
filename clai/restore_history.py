@@ -29,5 +29,4 @@ def __remove_clai_history__(lines, original_command):
     position = len(lines) - position - 1
     if position > 0 and lines[position - 1] == original_command:
         position = position - 1
-    new_lines = lines[:position + 1]
-    return new_lines
+    return lines[:position + 1]

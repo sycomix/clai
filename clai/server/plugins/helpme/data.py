@@ -32,10 +32,7 @@ class Datastore:
 
         r = requests.post(self.manpage_api, params=payload, headers=headers)
 
-        if r.status_code == 200:
-            return r.json()
-
-        return None
+        return r.json() if r.status_code == 200 else None
 
     def __call_stack_exchange_api__(self, query: str, limit: int = 1):
 
@@ -48,10 +45,7 @@ class Datastore:
 
         r = requests.post(self.stack_exchange_api, data=json.dumps(payload), headers=headers)
 
-        if r.status_code == 200:
-            return r.json()['hits']
-
-        return None
+        return r.json()['hits'] if r.status_code == 200 else None
 
     def search(self, query, service='stack_exchange', size=10):
         if service == 'stack_exchange':

@@ -34,12 +34,11 @@ ALL_PLUGINS_WITH_TAR_INSTALLED = [
 
 def get_printable_name(plugin: AgentDescriptor):
     composed_name = f"{plugin.name} "
-    if plugin.installed:
-        composed_name = composed_name + "(Installed)"
-    else:
-        composed_name = composed_name + "(Not Installed)"
-
-    return composed_name
+    return (
+        f"{composed_name}(Installed)"
+        if plugin.installed
+        else f"{composed_name}(Not Installed)"
+    )
 
 
 def expected_description(all_plugins, selected) -> str:

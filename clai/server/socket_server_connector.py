@@ -74,7 +74,7 @@ class SocketServerConnector(ServerConnector):
     def __read(self, data, server_socket, process_message):
         recv_data = b''
         chewing = True
-        logger.info(f"receiving from client")
+        logger.info("receiving from client")
         while chewing:
             part = server_socket.recv(self.BUFFER_SIZE)
             recv_data += part

@@ -29,8 +29,7 @@ class ClaiDelegateToAgentCommandRunner(CommandRunner, PostCommandRunner):
             return ClaiHelpCommandRunner().execute(state)
 
         if command_to_check.startswith('"'):
-            possible_agents = command_to_check.split('"')[1::2]
-            if possible_agents:
+            if possible_agents := command_to_check.split('"')[1::2]:
                 agent_name = possible_agents[0]
                 self.agent.force_agent = agent_name
                 state.command = command_to_check.replace(f'"{agent_name}"', "", 1).strip()

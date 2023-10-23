@@ -17,21 +17,18 @@ def split_file_commands(list_to_chunk: List, size_chunk: int):
 
 
 def is_type(type_as_string: str) -> bool:
-    return type_as_string in ('IsFile', 'IsDir')
+    return type_as_string in {'IsFile', 'IsDir'}
 
 
 def map_type(type_as_string) -> FileType:
     if type_as_string == 'IsFile':
         return FileType.File
 
-    if type_as_string == 'IsDir':
-        return FileType.Dir
-
-    return FileType.Unknow
+    return FileType.Dir if type_as_string == 'IsDir' else FileType.Unknow
 
 
 def is_status(status: str) -> bool:
-    return status in ('Created', 'Removed', 'Renamed', 'Updated', 'OwnerModified')
+    return status in {'Created', 'Removed', 'Renamed', 'Updated', 'OwnerModified'}
 
 
 def map_status(status_as_string: str) -> FileStatus:
@@ -41,7 +38,7 @@ def map_status(status_as_string: str) -> FileStatus:
     if status_as_string == 'Removed':
         return FileStatus.Deleted
 
-    if status_as_string in ('Renamed', 'Updated', 'OwnerModified'):
+    if status_as_string in {'Renamed', 'Updated', 'OwnerModified'}:
         return FileStatus.Modified
 
     return FileStatus.Unknow

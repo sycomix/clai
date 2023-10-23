@@ -25,11 +25,10 @@ class Thresholder(Orchestrator):
         self.load_state()
 
     def get_orchestrator_state(self):
-        state = {
+        return {
             'threshold_pre': self._threshold_pre,
-            'threshold_post': self._threshold_post
+            'threshold_post': self._threshold_post,
         }
-        return state
 
     def load_state(self):
         state = self.load()

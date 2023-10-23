@@ -27,7 +27,7 @@ def wa_skill_processor_grepbot(msg):
     try:
 
         match_string = re.findall(r'\"(.+?)\"', msg)[0]
-        msg = msg.replace('\"{}\"'.format(match_string), "") 
+        msg = msg.replace(f'\"{match_string}\"', "") 
 
     except:
         match_string = "<string>"
@@ -36,7 +36,8 @@ def wa_skill_processor_grepbot(msg):
     if not success: return {"text" : response}, 0.0
 
     if msg.startswith('grep for'): confidence = 1.0
-    else: confidence = max([item['confidence'] for item in response['intents']])
+    else:else
+        confidence = max(item['confidence'] for item in response['intents'])
 
     filename = "<filename>"
     dirname = None
@@ -46,10 +47,10 @@ def wa_skill_processor_grepbot(msg):
             dirname = "<directory>"
 
         if item['entity'] == 'starts-with':
-            match_string = '^' + match_string
+            match_string = f'^{match_string}'
 
         if item['entity'] == 'ends-with':
-            match_string = match_string + '$'
+            match_string = f'{match_string}$'
 
     flags = "-"
     if dirname:
@@ -62,11 +63,9 @@ def wa_skill_processor_grepbot(msg):
     if flags == "-":
         flags = ""
 
-    command = 'grep {} \"{}\"'.format(flags, match_string)
-
-    if dirname: command += " {}".format(dirname)
-    else: command += " {}".format(filename)
-
-    data = { "text": "Try >> " + command }
+    command = f'grep {flags} \"{match_string}\"' + (
+        f" {dirname}" if dirname else f" {filename}"
+    )
+    data = {"text": f"Try >> {command}"}
     return data, confidence
 

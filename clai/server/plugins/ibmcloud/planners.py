@@ -31,10 +31,7 @@ def get_plan_from_christian(domain: str, problem: str) -> list:
         req = request.Request(_planning_domains, data=data)
         res = json.loads(request.urlopen(req).read())
 
-        # warning :: planners don't always use standards, every response has to be parsed it's own way
-        plan = [act['name'][1:-1].replace('-', '_') for act in res['result']['plan']]
-        return plan
-
+        return [act['name'][1:-1].replace('-', '_') for act in res['result']['plan']]
     except Exception as e:
         print(e)
 
@@ -49,9 +46,13 @@ FAST-DOWNWARD --> http://www.fast-downward.org/
 def get_plan_from_pr2plan(domain: str, problem: str, obs: list, q: list = None) -> list:
     try:
 
-        obs_format = '\n'.join(['({})'.format(o) for o in obs])
+        obs_format = '\n'.join([f'({o})' for o in obs])
         # note :: additional entry for observations used by pr2plan compilation
-        output = requests.put(_pr2plan_hostname + '/solve', json={"domain": domain, "problem": problem, "obs": obs_format}, timeout=3).json()
+        output = requests.put(
+            f'{_pr2plan_hostname}/solve',
+            json={"domain": domain, "problem": problem, "obs": obs_format},
+            timeout=3,
+        ).json()
 
         # warning :: planners don't always use standards, every response has to be parsed it's own way
         plan = [action.strip()[1:-4] if '_1' in action else action[1:-2] for action in
@@ -61,8 +62,8 @@ def get_plan_from_pr2plan(domain: str, problem: str, obs: list, q: list = None) 
         # note :: should ideally be replaced by an investigation of partial orders to determine necessity
         remaining_plan = ['set-state']
         for action in plan[::-1]:
-            if 'explain_obs' in action: pass
-            else: remaining_plan.insert(1, action)
+            if 'explain_obs' not in action:
+                remaining_plan.insert(1, action)
 
         return remaining_plan
 

@@ -79,4 +79,4 @@ class DATAXPLORE(Agent):
                 confidence=confidence)
 
         except Exception as ex:
-            return [ { "text" : "Method failed with status " + str(ex) }, 0.0 ]
+            return [{"text": f"Method failed with status {str(ex)}"}, 0.0]

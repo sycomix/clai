@@ -6,30 +6,31 @@
 #
 
 ''' imports '''
+
 from typing import List
 from datetime import datetime
 from clai.server.command_message import Action, NOOP_COMMAND
 from clai.tools.colorize_console import Colorize
 
-import requests 
+import requests
 import json
 import os
 
 ''' globals '''
 _real_path = '/'.join(os.path.realpath(__file__).split('/')[:-1])
-_path_to_config_file = _real_path + '/config.json'
+_path_to_config_file = f'{_real_path}/config.json'
 
 _config = json.loads( open(_path_to_config_file).read() )
 
 _github_access_token = _config["github_personal_access_token"]
 _github_username = _config["github_username"]
 _github_repo = _config["github_repo"]
-_github_url = "https://api.github.com/repos/{}".format("/".join(_github_repo))
+_github_url = f'https://api.github.com/repos/{"/".join(_github_repo)}'
 
 _path_to_log_file =_config["path_to_log_file"]
 
 _rasa_port_number = _config["rasa_port_number"]
-_rasa_service = 'http://localhost:{}/model/parse'.format(_rasa_port_number)
+_rasa_service = f'http://localhost:{_rasa_port_number}/model/parse'
 
 class Service:
     def __init__(self):
@@ -62,25 +63,31 @@ class Service:
                 self.state["current_intent"] = response["intent"]["name"]
 
         except Exception as ex:
-            print("Method failed with status " + str(ex))
+            print(f"Method failed with status {str(ex)}")
 
         if self.state["current_intent"] == "commit":
 
             if not self.state["ready_flag"]:
                 self.state["ready_flag"] = True
-                temp_description = "Ready to {}. Press execute to continue.".format(self.state["current_intent"])
+                temp_description = f'Ready to {self.state["current_intent"]}. Press execute to continue.'
 
-                return [ Action(
-                            suggested_command="git status | tee {}".format(_path_to_log_file),
-                            execute=True,
-                            description=None,
-                            confidence=1.0
-                            ), Action(
-                                suggested_command=NOOP_COMMAND,
-                                execute=True,
-                                description=Colorize().info().append(temp_description).to_console(),
-                                confidence=1.0
-                                ) ] 
+                return [
+                    Action(
+                        suggested_command=f"git status | tee {_path_to_log_file}",
+                        execute=True,
+                        description=None,
+                        confidence=1.0,
+                    ),
+                    Action(
+                        suggested_command=NOOP_COMMAND,
+                        execute=True,
+                        description=Colorize()
+                        .info()
+                        .append(temp_description)
+                        .to_console(),
+                        confidence=1.0,
+                    ),
+                ] 
 
         if command == "execute":
 
@@ -98,7 +105,7 @@ class Service:
                     current_branch = line.split()[-1]
 
                 if line.strip().startswith("modified:"):
-                    commit_description += line.strip() + " + "
+                    commit_description += f"{line.strip()} + "
 
             if commit_description: self.state["commit_details"] = commit_description
             if current_branch: self.state["current_branch"] = current_branch
@@ -106,11 +113,11 @@ class Service:
             commit_description = self.state["commit_details"]
 
             respond = Action(
-                        suggested_command='git commit -m "{}" -m "{}";'.format(commit_message, commit_description),
-                        execute=False,
-                        description=None,
-                        confidence=1.0
-                    )
+                suggested_command=f'git commit -m "{commit_message}" -m "{commit_description}";',
+                execute=False,
+                description=None,
+                confidence=1.0,
+            )
 
             if self.state["has_done_add"]:
                 return respond
@@ -133,7 +140,7 @@ class Service:
                 )
 
         if self.state["current_intent"] == "merge":
-            merge_url = "{}/pulls".format(_github_url)
+            merge_url = f"{_github_url}/pulls"
 
             source = None
             target = "master"
@@ -151,11 +158,11 @@ class Service:
 
             ping_github = json.loads(self.gh_session.post(merge_url, json=payload).text)
             return Action(
-                    suggested_command=NOOP_COMMAND,
-                    execute=True,
-                    description="Success. Created PR {}".format(ping_github["number"]),
-                    confidence=confidence
-                )
+                suggested_command=NOOP_COMMAND,
+                execute=True,
+                description=f'Success. Created PR {ping_github["number"]}',
+                confidence=confidence,
+            )
 
         if self.state["current_intent"] == "comment":
 
@@ -167,7 +174,7 @@ class Service:
                 if entity["entity"] == "comment": comment = entity["value"]
 
             idx = command.split('<')[-1].split('>')[0]
-            comment_url = "{}/issues/{}/comments".format(_github_url, idx)
+            comment_url = f"{_github_url}/issues/{idx}/comments"
 
             payload = { "body" : comment }
 

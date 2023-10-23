@@ -130,8 +130,12 @@ class ClaiEmulator:
 
         post_title_frame = ttk.Frame(toggled_frame.sub_frame)
         post_title_frame.pack(fill='x', expand=True)
-        ttk.Label(post_title_frame, text=f'Post execution', anchor='center', font=self.title_font). \
-            pack(side=tk.LEFT, padx=10, fill='x', expand=True)
+        ttk.Label(
+            post_title_frame,
+            text='Post execution',
+            anchor='center',
+            font=self.title_font,
+        ).pack(side=tk.LEFT, padx=10, fill='x', expand=True)
 
         fifth_row = ttk.Frame(toggled_frame.sub_frame)
         fifth_row.pack(fill="x", expand=True)

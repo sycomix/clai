@@ -48,8 +48,6 @@ def get_ignore_skill_warmstart_data(n_points, context_size, skill_idx):
 
         confs_sortidx = np.argsort(confs)
         max_confidx = confs_sortidx[-1]
-        second_max_confidx = confs_sortidx[-2]
-
         # Negative reward on choosing the specified skill
         reward = -1.0
         data_tids.append(f'warm-start-tid-{tid}')
@@ -57,20 +55,17 @@ def get_ignore_skill_warmstart_data(n_points, context_size, skill_idx):
         data_arm_rewards.append((skill_idx, reward))
         tid += 1
 
+        reward = +1.0
+        data_tids.append(f'warm-start-tid-{tid}')
         # Positive reward on selecting the maximum skill
         if max_confidx != skill_idx:
-            reward = +1.0
-            data_tids.append(f'warm-start-tid-{tid}')
-            data_contexts.append(list(confs))
             data_arm_rewards.append((max_confidx, reward))
-            tid += 1
         else:
-            reward = +1.0
-            data_tids.append(f'warm-start-tid-{tid}')
-            data_contexts.append(list(confs))
-            data_arm_rewards.append((second_max_confidx, reward))
-            tid += 1
+            second_max_confidx = confs_sortidx[-2]
 
+            data_arm_rewards.append((second_max_confidx, reward))
+        tid += 1
+        data_contexts.append(list(confs))
     # randomise order
     idxorder = np.random.permutation(n_points)
 

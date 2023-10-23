@@ -143,9 +143,9 @@ def parse_args():
             print_error('You need root privileges for the system wide installation process.')
             sys.exit(1)
 
-    if args.user_install:
         # overwrite the global default path with the local default path
-        if args.destdir == default_user_destdir:
+    if args.destdir == default_user_destdir:
+        if args.user_install:
             args.destdir = os.path.join(
                 os.path.expanduser('~/.bin'),
                 'clai',
@@ -158,11 +158,11 @@ def parse_args():
 
     shell = get_shell(args)
     if shell not in SUPPORTED_SHELLS:
-        print_error('%s is not supported yet.' % shell)
+        print_error(f'{shell} is not supported yet.')
         sys.exit(1)
 
-    if args.system:
-        if args.destdir != default_user_destdir:
+    if args.destdir != default_user_destdir:
+        if args.system:
             print_error(
                 'Custom paths incompatible with --system option.')
             sys.exit(1)
@@ -171,15 +171,15 @@ def parse_args():
 
 
 def mkdir(path):
-    print("creating directory: %s" % path)
+    print(f"creating directory: {path}")
     if not os.path.exists(path):
         os.makedirs(path, exist_ok=True)
 
 
 def cp_tree(from_path, to_path):
-    print("copying folder from %s to %s" % (from_path, to_path))
+    print(f"copying folder from {from_path} to {to_path}")
     copy_tree(from_path, to_path)
-    
+
     # Unfortunately, the results of copy_tree() on z/OS are different depending
     # on which version of Python you're using:
     #
@@ -210,13 +210,12 @@ def recursively_tag_untagged_files_as_ebcdic(path):
                 )
                 result = result.stdout.strip()
 
-                match = re.match(
+                if match := re.match(
                     r'(?P<type>\S+)\s+(?P<encoding>\S+)\s+T\=(?P<tagging>on|off)\s+(?P<filepath>.*)',
-                    result
-                )
-                if match:
+                    result,
+                ):
                     tagging: str = match.group('tagging')
-                    
+
                     # Files that are not already tagged will be retagged as EBCDIC
                     if tagging != "on":
                         os.system(f'chtag -tc 1047 {filepath}')
@@ -225,12 +224,12 @@ def recursively_tag_untagged_files_as_ebcdic(path):
             
 
 def copy(file, to_path):
-    print("copying file from %s to %s" % (file, to_path))
+    print(f"copying file from {file} to {to_path}")
     copy_file(file, to_path, update=1)
 
 
 def download_file(file_url, filename):
-    print("Download %s" % file_url)
+    print(f"Download {file_url}")
     from urllib import request
     # pylint: disable=protected-access
     ssl._create_default_https_context = ssl._create_unverified_context
@@ -238,7 +237,7 @@ def download_file(file_url, filename):
 
 
 def remove(path):
-    print("cleaning %s" % path)
+    print(f"cleaning {path}")
     remove_tree(path)
 
 
@@ -255,10 +254,11 @@ def install_plugins(install_path, user_install):
             default = plugin.default
 
         if default or z_default:
-            installed = install_plugins_dependencies(install_path, plugin.pkg_name, user_install)
-            if installed:
+            if installed := install_plugins_dependencies(
+                install_path, plugin.pkg_name, user_install
+            ):
                 agent_datasource.mark_plugins_as_installed(plugin.name, None)
-    
+
     return agent_datasource
 
 
@@ -289,9 +289,8 @@ def cli_executable(cli_path):
 
 
 def read_users(bin_path):
-    with open(bin_path + '/usersInstalled.json') as json_file:
-        users = json.load(json_file)
-        return users
+    with open(f'{bin_path}/usersInstalled.json') as json_file:
+        return json.load(json_file)
 
 
 def register_the_user(bin_path, system):
@@ -300,7 +299,7 @@ def register_the_user(bin_path, system):
     if user_path not in users:
         users.append(user_path)
 
-    with open(bin_path + '/usersInstalled.json', 'w') as json_file:
+    with open(f'{bin_path}/usersInstalled.json', 'w') as json_file:
         json.dump(users, json_file)
 
 
@@ -397,8 +396,8 @@ def execute(args):
         os.system(f'chmod -R 777 {bin_path}')
         cli_executable(cli_path)
 
-        download_file(URL_BASH_PREEXEC, filename='%s/%s' % (temp_path, BASH_PREEXEC))
-        copy('%s/%s' % (temp_path, BASH_PREEXEC), bin_path)
+        download_file(URL_BASH_PREEXEC, filename=f'{temp_path}/{BASH_PREEXEC}')
+        copy(f'{temp_path}/{BASH_PREEXEC}', bin_path)
         if is_zos():
             os.system(f'chtag -tc 819 {bin_path}/{BASH_PREEXEC}')
 
@@ -423,7 +422,7 @@ def execute(args):
     remove(f"{temp_path}")
 
     if not user_install:
-        os.system(f'chmod -R 777 /var/tmp')
+        os.system('chmod -R 777 /var/tmp')
 
     print_complete("CLAI has been installed correctly, you will need to restart your shell.")
 
@@ -439,19 +438,19 @@ def install_orchestration(bin_path):
 
 def register_file(system):
     rc_files = get_rc_files(system)
+    newline = "\n"
     for file in rc_files:
         encoding = "utf-8"
-        newline = "\n"
         left_bracket = "["
         right_bracket = "]"
-        
+
         # The open() with encoding cp1047 (IBM-1047) doesn't work well or works
         # as cp037 (IBM-037)
         if is_rw_with_EBCDIC(file):
             encoding = "cp1047"
             left_bracket = "\xDD"
             right_bracket = "\xA8"
-            
+
             # newline must be '\x85' when using IzODA and Rocket Pythons, but
             # '\n' when using IBM Python.  Since we can only easily support one
             # path at the moment, we're going to support IBM Python since it
@@ -463,22 +462,70 @@ def register_file(system):
             #newline = "\x85"
 
         print(f"registering {file}")
-        append_to_file(file, "# CLAI setup"+newline, encoding)
+        append_to_file(file, f"# CLAI setup{newline}", encoding)
 
-        append_to_file(file,
-                       'if ! '+left_bracket+' ${#preexec_functions'+left_bracket+
-                       '@'+right_bracket+'} -eq 0 '+right_bracket+'; then'+newline, encoding)
-        append_to_file(file,
-                       '  if ! '+left_bracket+left_bracket+' " ${preexec_functions'+
-                       left_bracket+'@'+right_bracket+'} " =~ " preexec_override_invoke " '+
-                       right_bracket+right_bracket+'; then'+newline, encoding)
-        append_to_file(file, f"     source {get_setup_file()} "+newline, encoding)
-        append_to_file(file, '  fi'+newline, encoding)
-        append_to_file(file, 'else'+newline, encoding)
-        append_to_file(file, f" source {get_setup_file()} "+newline, encoding)
-        append_to_file(file, 'fi'+newline, encoding)
+        append_to_file(
+            file,
+            (
+                (
+                    (
+                        (
+                            (
+                                (
+                                    f'if ! {left_bracket}'
+                                    + ' ${#preexec_functions'
+                                    + left_bracket
+                                    + '@'
+                                )
+                                + right_bracket
+                            )
+                            + '} -eq 0 '
+                        )
+                        + right_bracket
+                    )
+                    + '; then'
+                )
+                + newline
+            ),
+            encoding,
+        )
+        append_to_file(
+            file,
+            (
+                (
+                    (
+                        (
+                            (
+                                (
+                                    (
+                                        (
+                                            f'  if ! {left_bracket}{left_bracket}'
+                                            + ' " ${preexec_functions'
+                                            + left_bracket
+                                        )
+                                        + '@'
+                                    )
+                                    + right_bracket
+                                )
+                                + '} " =~ " preexec_override_invoke " '
+                            )
+                            + right_bracket
+                        )
+                        + right_bracket
+                    )
+                    + '; then'
+                )
+                + newline
+            ),
+            encoding,
+        )
+        append_to_file(file, f"     source {get_setup_file()} {newline}", encoding)
+        append_to_file(file, f'  fi{newline}', encoding)
+        append_to_file(file, f'else{newline}', encoding)
+        append_to_file(file, f" source {get_setup_file()} {newline}", encoding)
+        append_to_file(file, f'fi{newline}', encoding)
 
-        append_to_file(file, "# End CLAI setup"+newline, encoding)
+        append_to_file(file, f"# End CLAI setup{newline}", encoding)
 
 
 def append_setup_to_file(rc_path, bin_path, port):

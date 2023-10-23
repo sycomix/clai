@@ -76,9 +76,7 @@ class CommandRunnerFactory:
         clai_post_commands_names = self.clai_post_commands.keys()
 
         commands_filtered = filter(clai_command_name.startswith, clai_post_commands_names)
-        command_found = next(commands_filtered, None)
-
-        if command_found:
+        if command_found := next(commands_filtered, None):
             return self.clai_post_commands[command_found]
 
         return ClaiDelegateToAgentCommandRunner(
@@ -89,9 +87,7 @@ class CommandRunnerFactory:
         clai_commands_names = self.clai_commands.keys()
 
         commands_filtered = filter(clai_command_name.startswith, clai_commands_names)
-        command_found = next(commands_filtered, None)
-
-        if command_found:
+        if command_found := next(commands_filtered, None):
             return self.clai_commands[command_found]
 
         return ClaiDelegateToAgentCommandRunner(

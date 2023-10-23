@@ -21,7 +21,6 @@ class FixBot(Agent):
 
     def __init__(self):
         super(FixBot, self).__init__()
-        pass
 
     def get_next_action(self, state: State) -> Action:
         return Action(suggested_command=state.command)
@@ -48,7 +47,7 @@ class FixBot(Agent):
             return Action(
                 description=Colorize()
                 .info()
-                .append("Maybe you want to try: {}".format(cmd_to_run))
+                .append(f"Maybe you want to try: {cmd_to_run}")
                 .to_console(),
-                confidence=0.8
+                confidence=0.8,
             )

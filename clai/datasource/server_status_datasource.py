@@ -36,11 +36,12 @@ class ServerStatusDatasource:
         return self.__find_messages_by_user(user_name)
 
     def get_last_message(self, user_name: str, offset: int = 0) -> State:
-        last_message = None
         messages_by_user = self.__find_messages_by_user(user_name)
-        if messages_by_user and len(messages_by_user) > 1 + offset:
-            last_message = messages_by_user[-2 - offset]
-        return last_message
+        return (
+            messages_by_user[-2 - offset]
+            if messages_by_user and len(messages_by_user) > 1 + offset
+            else None
+        )
 
     def store_info(self, message: State) -> State:
         stored_message = self.find_message_stored(message.command_id, message.user_name)

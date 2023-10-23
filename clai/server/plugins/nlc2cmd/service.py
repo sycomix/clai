@@ -19,7 +19,7 @@ class Service:
 
         # call to WA evaluators
         def __compute(*args):
-            result.append( eval('wa_skills.' + args[0])(args[1]) )
+            result.append(eval(f'wa_skills.{args[0]}')(args[1]))
 
         # Extract user input
         msg = args[0]

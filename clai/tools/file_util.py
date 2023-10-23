@@ -30,7 +30,7 @@ def is_rw_with_EBCDIC(file):
         if not os.path.exists(file_path_complete):
             is_EBCDIC = True
         else:
-            cmd = "chtag -p " + file_path_complete + " | cut -d ' ' -f 2,6 "
+            cmd = f"chtag -p {file_path_complete} | cut -d ' ' -f 2,6 "
             pfile = os.popen(cmd, 'r')
             output = pfile.read().strip()
             if output in ("untagged T=off", "IBM-1047 T=off"):
@@ -39,16 +39,11 @@ def is_rw_with_EBCDIC(file):
     return is_EBCDIC
 
 def get_rc_file(system=False):
-    if system:
-        return '/etc/profile'
-    return '~/.bashrc'
+    return '/etc/profile' if system else '~/.bashrc'
 
 
 def get_rc_files(system=False):
-    if system:
-        return ['/etc/profile']
-
-    return ['~/.bash_profile', '~/.bashrc']
+    return ['/etc/profile'] if system else ['~/.bash_profile', '~/.bashrc']
 
 
 def get_setup_file():
@@ -57,7 +52,7 @@ def get_setup_file():
 
 def append_to_file(file_path, value_to_append, codeset="utf-8"):
     file_path_complete = os.path.expanduser(file_path)
-    print("append to file %s" % file_path_complete)
+    print(f"append to file {file_path_complete}")
     with open(os.path.expanduser(file_path_complete), "a+", encoding=codeset) as file:
         file.write(value_to_append)
 

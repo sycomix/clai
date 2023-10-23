@@ -22,9 +22,9 @@ class WebSocketClientConnector(ClientConnector):
         self.host = host
 
     def send(self, message: StateDTO) -> Action:
-        response = asyncio.get_event_loop() \
-            .run_until_complete(self.__send_message(message))
-        return response
+        return asyncio.get_event_loop().run_until_complete(
+            self.__send_message(message)
+        )
 
     async def __send_message(self, message: StateDTO):
         async with websockets.connect(self.host) as websocket:

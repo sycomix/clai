@@ -84,10 +84,7 @@ if __name__ == '__main__':
 
     # pylint: disable=unbalanced-tuple-unpacking
     HOST, PORT = sys.argv[1:3]
-    WEBSOCKET = False
-    if sys.argv[3]:
-        WEBSOCKET = sys.argv[3] == "websocket"
-
+    WEBSOCKET = sys.argv[3] == "websocket" if sys.argv[3] else False
     INPUT_VALUE = input('$')
     print(HOST, PORT, WEBSOCKET)
     if WEBSOCKET:

@@ -7,10 +7,11 @@
 
 ''' helper functions for wa skills package '''
 
+
 ''' imports '''
 from typing import List
 
-import requests 
+import requests
 import json
 import os
 
@@ -19,7 +20,7 @@ SUCCESS = True
 FAILURE = False
 
 _real_path = '/'.join(os.path.realpath(__file__).split('/')[:-1])
-_path_to_config_file = _real_path + '/config.json'
+_path_to_config_file = f'{_real_path}/config.json'
 
 services = json.loads( open(_path_to_config_file).read() )
 
@@ -38,7 +39,7 @@ def call_wa_skill(msg: str, name: str) -> List:
             return response['result'], FAILURE
 
     except Exception as ex:
-        return "Method failed with status " + str(ex), FAILURE
+        return f"Method failed with status {str(ex)}", FAILURE
 
 ''' return name of file being run '''
 def get_own_name(file: str) -> str:

@@ -30,11 +30,12 @@ class OrchestratorProvider(ABC):
         if name == self.__current_orchestrator_name:
             return
 
-        if name in self.orchestrator_instances:
+        if (
+            name not in self.orchestrator_instances
+            and self.get_orchestrator_instance(name)
+            or name in self.orchestrator_instances
+        ):
             self.__current_orchestrator_name = name
-        else:
-            if self.get_orchestrator_instance(name):
-                self.__current_orchestrator_name = name
 
     def get_current_orchestrator_name(self):
         if not self.__current_orchestrator_name:

@@ -31,12 +31,12 @@ def obtain_last_processes(user_name):
     process_changes = []
 
     if PLATFORM not in ('zos', 'os390'):
-        for process in PSUTIL.process_iter(attrs=['pid', 'name', 'username', 'create_time']):
-            process_changes.append(process.info)
-    else:
-        # TODO: Figure out the equivilant on z/OS
-        pass
-
+        process_changes.extend(
+            process.info
+            for process in PSUTIL.process_iter(
+                attrs=['pid', 'name', 'username', 'create_time']
+            )
+        )
     porcess_changes = list(filter(lambda _: _['username'] == user_name, process_changes))
     porcess_changes.sort(key=lambda _: _['create_time'], reverse=True)
     return map_processes(process_changes[EXCLUDE_OWN_PROCESS:SIZE_PROCESS])

@@ -158,10 +158,10 @@ class AgentDatasource:
         return list(filter(lambda agent: os_name not in agent.exclude, agent_descriptors))
 
     def all_plugins(self) -> List[AgentDescriptor]:
-        agent_descriptors = list(
+        agent_descriptors = [
             self.load_descriptors(os.path.join(importer.path, name), name)
-            for importer, name, _
-            in pkg.iter_modules(self.get_path()))
+            for importer, name, _ in pkg.iter_modules(self.get_path())
+        ]
 
         agent_descriptors = self.filter_by_platform(agent_descriptors)
 
@@ -217,10 +217,14 @@ class AgentDatasource:
     def get_agent_descriptor(self, plugin_to_select) -> Optional[AgentDescriptor]:
         all_plugins = self.all_plugins()
 
-        for plugin in all_plugins:
-            if plugin_to_select in (plugin.name, plugin.pkg_name):
-                return plugin
-        return None
+        return next(
+            (
+                plugin
+                for plugin in all_plugins
+                if plugin_to_select in (plugin.name, plugin.pkg_name)
+            ),
+            None,
+        )
 
     def select_plugin(self, plugin_to_select: str, user_name: str) -> Optional[pkg.ModuleInfo]:
         agent_descriptor_selected = self.get_agent_descriptor(plugin_to_select)

@@ -132,13 +132,9 @@ def create_message_list(selected_plugin: List[str], all_plugins: List[AgentDescr
 def create_message_server_runing() -> str:
     colorize = Colorize()
     if check_if_process_running():
-        colorize \
-            .complete() \
-            .append(f"The server is running")
+        colorize.complete().append("The server is running")
     else:
-        colorize \
-            .warning() \
-            .append(f"The server is not running")
+        colorize.warning().append("The server is not running")
 
     return colorize.to_console()
 

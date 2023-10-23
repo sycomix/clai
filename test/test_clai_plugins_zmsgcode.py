@@ -68,11 +68,11 @@ class MsgCodeAgentTest(unittest.TestCase):
         #action = cls.agent.get_next_action(state=state)
         action = cls.agent.post_execute(state=state)
 
-        print("Input: {}".format(state.command))
+        print(f"Input: {state.command}")
         print("===========================")
-        print("Response: {}".format(action.suggested_command))
+        print(f"Response: {action.suggested_command}")
         print("===========================")
-        print("Explanation: {}".format(action.description))
+        print(f"Explanation: {action.description}")
 
         return action
 

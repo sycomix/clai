@@ -22,7 +22,7 @@ from clai.tools.file_util import get_rc_file, get_setup_file, get_rc_files, is_r
 
 
 def remove(path):
-    print("cleaning %s" % path)
+    print(f"cleaning {path}")
     try:
         remove_tree(path)
     except OSError:
@@ -32,7 +32,7 @@ def remove(path):
 def remove_system_folder(path: str = None):
     if path is not None:
         # path to the clai dir in a local user installation
-        default_system_destdir = "/".join(path.split("/")[0:-1])
+        default_system_destdir = "/".join(path.split("/")[:-1])
     else:
         default_system_destdir = os.path.join(
             os.path.expanduser("/opt/local/share"),
@@ -46,16 +46,14 @@ def clai_installed(rc_file_path):
     path = os.path.expanduser(rc_file_path)
     if os.path.isfile(path):
         line_to_search = "export CLAI_PATH="
-        print("searching %s" % line_to_search)
+        print(f"searching {line_to_search}")
         lines = io.open(path, "r",
                         encoding="utf-8",
                         errors="ignore").readlines()
-        lines_found = list(filter(lambda line: line_to_search in line, lines))
-
-        if lines_found:
-            my_path = lines_found[0].replace(line_to_search, "").replace("\n", "").strip()
-            return my_path
-
+        if lines_found := list(
+            filter(lambda line: line_to_search in line, lines)
+        ):
+            return lines_found[0].replace(line_to_search, "").replace("\n", "").strip()
     return None
 
 
@@ -66,9 +64,8 @@ def is_root_user():
 # pylint: disable=bare-except
 def read_users(bin_path):
     try:
-        with open(bin_path + "/usersInstalled.json") as file:
-            users = json.load(file)
-            return users
+        with open(f"{bin_path}/usersInstalled.json") as file:
+            return json.load(file)
     except:
         return []
 
@@ -79,7 +76,7 @@ def unregister_the_user(bin_path):
     if user_path in users:
         users.remove(user_path)
 
-    with open(bin_path + "/usersInstalled.json", "w") as json_file:
+    with open(f"{bin_path}/usersInstalled.json", "w") as json_file:
         json.dump(users, json_file)
 
     return users
@@ -111,7 +108,7 @@ def remove_between(rc_file_path, start, end):
             # identify the newline.
             codeset = "cp1047"
             newline = '\x85'
-            for err_line in open(path, "r", encoding=codeset, errors="ignore").readlines():
+            for err_line in open(path, "r", encoding=codeset, errors="ignore"):
                 right_line_list = err_line.split(newline)
                 length = len(right_line_list)
                 i = 0
@@ -151,11 +148,11 @@ def remove_setup_register():
 
 
 def is_user_install(bin_path):
-    plugins_config = ConfigStorage(
-        alternate_path=f"{bin_path}/configPlugins.json"
-    ).read_config(None).user_install
-
-    return plugins_config
+    return (
+        ConfigStorage(alternate_path=f"{bin_path}/configPlugins.json")
+        .read_config(None)
+        .user_install
+    )
 
 
 def execute(args):

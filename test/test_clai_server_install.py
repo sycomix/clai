@@ -20,7 +20,9 @@ def test_should_return_the_command_to_get_the_plugin_from_url_and_move_it_into_p
     agent_datasource = AgentDatasource()
     clai_install_command_runner = ClaiInstallCommandRunner(agent_datasource)
     command_to_execute = clai_install_command_runner.execute(CLAI_INSTALL_STATE_URL)
-    dir_to_install = CLAI_INSTALL_STATE_URL.command.replace(f'{"clai install"}', '').strip()
+    dir_to_install = CLAI_INSTALL_STATE_URL.command.replace(
+        'clai install', ''
+    ).strip()
 
     assert command_to_execute.suggested_command == f'cd $CLAI_PATH/clai/server/plugins && curl -O {dir_to_install}'
 
@@ -33,7 +35,9 @@ def test_should_return_the_command_to_get_the_plugin_from_route_and_move_it_into
     agent_datasource = AgentDatasource()
     clai_install_command_runner = ClaiInstallCommandRunner(agent_datasource)
     command_to_execute = clai_install_command_runner.execute(CLAI_INSTALL_STATE_FOLDER)
-    dir_to_install = CLAI_INSTALL_STATE_FOLDER.command.replace(f'{"clai install"}', '').strip()
+    dir_to_install = CLAI_INSTALL_STATE_FOLDER.command.replace(
+        'clai install', ''
+    ).strip()
 
     assert command_to_execute.suggested_command == f'cp -R {dir_to_install} $CLAI_PATH/clai/server/plugins'
 
@@ -46,7 +50,9 @@ def test_should_return_the_message_error_when_the_folder_doesnt_exist(mocker):
     agent_datasource = AgentDatasource()
     clai_install_command_runner = ClaiInstallCommandRunner(agent_datasource)
     command_to_execute = clai_install_command_runner.execute(CLAI_INSTALL_STATE_FOLDER)
-    dir_to_install = CLAI_INSTALL_STATE_FOLDER.command.replace(f'{"clai install"}', '').strip()
+    dir_to_install = CLAI_INSTALL_STATE_FOLDER.command.replace(
+        'clai install', ''
+    ).strip()
 
     assert command_to_execute.suggested_command == ':'
     assert command_to_execute.description == create_error_install(dir_to_install).description

@@ -118,15 +118,16 @@ class GPT:
 
     def submit_request(self, prompt):
         """Calls the OpenAI API with the specified parameters."""
-        response = openai.Completion.create(engine=self.get_engine(),
-                                            prompt=self.craft_query(prompt),
-                                            max_tokens=self.get_max_tokens(),
-                                            temperature=self.get_temperature(),
-                                            top_p=1,
-                                            n=1,
-                                            stream=False,
-                                            stop=self.stop)
-        return response
+        return openai.Completion.create(
+            engine=self.get_engine(),
+            prompt=self.craft_query(prompt),
+            max_tokens=self.get_max_tokens(),
+            temperature=self.get_temperature(),
+            top_p=1,
+            n=1,
+            stream=False,
+            stop=self.stop,
+        )
 
     def get_top_reply(self, prompt, strip_output_suffix=False):
         """Obtains the best result as returned by the API."""

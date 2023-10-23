@@ -51,7 +51,4 @@ class MaxOrchestrator(Orchestrator):
         if force_response:
             return selected_candidate
 
-        if max_conf >= self.threshold:
-            return selected_candidate
-
-        return None
+        return selected_candidate if max_conf >= self.threshold else None

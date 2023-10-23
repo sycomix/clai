@@ -47,10 +47,7 @@ class KnowledgeCenter(Provider):
     def get_variants(self) -> List[KCtype]:
         """Override the default get_variants() method so that it instead returns
         a list of KCtype objects"""
-        types = []
-        for type_str in super().get_variants():
-            types.append(KCtype[type_str])
-        return types
+        return [KCtype[type_str] for type_str in super().get_variants()]
 
     def call(self, query: str, limit: int = 1, **kwargs):
         """Call the KnowledgeCenter search provider.  If no search variants
@@ -63,7 +60,7 @@ class KnowledgeCenter(Provider):
             tags="bpx",
         )
         self.__log_debug__(
-            f"call(query={query}, limit={str(limit)}, **kwargs={str(kwargs)})"
+            f"call(query={query}, limit={limit}, **kwargs={str(kwargs)})"
         )
 
         search_type: KCtype = kwargs["search_type"]
@@ -164,7 +161,7 @@ class KnowledgeCenter(Provider):
                 f"Link: {result['link']}\n",
             ]
 
-        self.__log_debug__(f"get_printable_output() returns {str(lines)}")
+        self.__log_debug__(f"get_printable_output() returns {lines}")
         return "\n".join(lines)
 
 def __clean__(html: str) -> str:

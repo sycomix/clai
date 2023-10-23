@@ -62,12 +62,11 @@ class RLTKBandit(Orchestrator):
 
     def get_orchestrator_state(self):
 
-        state = {
+        return {
             'agent': self._agent,
             'action_order': self._action_order,
-            'warm_start': self._warm_start
+            'warm_start': self._warm_start,
         }
-        return state
 
     def load_state(self):
 
@@ -150,7 +149,7 @@ class RLTKBandit(Orchestrator):
 
             self.save()
         except Exception as err:
-            logger.warning('Exception in warm starting orchestrator. Error: ' + str(err))
+            logger.warning(f'Exception in warm starting orchestrator. Error: {str(err)}')
             raise err
 
     def choose_action(self,
@@ -207,20 +206,25 @@ class RLTKBandit(Orchestrator):
                           action_idx: int,
                           candidate_actions: Optional[List[Union[Action, List[Action]]]]):
 
-        suggested_agent = None
-        for agent_name, agent_idx in self._action_order.items():
-            if agent_idx == action_idx:
-                suggested_agent = agent_name
-                break
-
+        suggested_agent = next(
+            (
+                agent_name
+                for agent_name, agent_idx in self._action_order.items()
+                if agent_idx == action_idx
+            ),
+            None,
+        )
         if suggested_agent == self.noop_command or suggested_agent is None:
             return None
 
-        for action in candidate_actions:
-            if action.agent_owner == suggested_agent:
-                return action
-
-        return None
+        return next(
+            (
+                action
+                for action in candidate_actions
+                if action.agent_owner == suggested_agent
+            ),
+            None,
+        )
 
     def record_transition(self,
                           prev_state: TerminalReplayMemoryComplete,
@@ -231,25 +235,24 @@ class RLTKBandit(Orchestrator):
             prev_state_post = prev_state.post_replay
 
             if prev_state_pre.command.action_suggested is None or \
-                    prev_state_post.command.action_suggested is None or \
-                    prev_state_post.command.action_suggested.suggested_command == self.noop_command:
+                        prev_state_post.command.action_suggested is None or \
+                        prev_state_post.command.action_suggested.suggested_command == self.noop_command:
                 return
-
-            reward = float(prev_state_post.command.suggested_executed)
 
             currently_executed_command = current_state_pre.command.command
             all_the_stuff_from_last_execution = \
-                prev_state_pre.command.action_suggested.suggested_command + \
-                prev_state_pre.command.action_suggested.description + \
-                prev_state_post.command.action_suggested.description
+                    prev_state_pre.command.action_suggested.suggested_command + \
+                    prev_state_pre.command.action_suggested.description + \
+                    prev_state_post.command.action_suggested.description
 
             base = set(currently_executed_command.split())
             reference = set(all_the_stuff_from_last_execution.split())
 
             # check how much of the current commands is contained in the stuff from last time
             match_score = len(base & reference) / len(base)
-            reward += float(match_score > self._reward_match_threshold)
-
+            reward = float(prev_state_post.command.suggested_executed) + float(
+                match_score > self._reward_match_threshold
+            )
             self._agent.observe(prev_state.post_replay.command.command_id, reward)
         except Exception as err:    # pylint: disable=broad-except
             logger.warning(f'Error in record_transition of bandit orchestrator. Error: {err}')

@@ -44,12 +44,15 @@ class DemoAgent(Agent):
 
     def post_execute(self, state: State) -> Action:
         if state.command.startswith('ls') and state.result_code != '0':
-            return Action(description=Colorize()
-                          .append(f"Are you sure that this command is correct?({state.result_code})\n")
-                          .warning()
-                          .append(f"Try man ls for more info ")
-                          .to_console(),
-                          confidence=1
-                          )
+            return Action(
+                description=Colorize()
+                .append(
+                    f"Are you sure that this command is correct?({state.result_code})\n"
+                )
+                .warning()
+                .append("Try man ls for more info ")
+                .to_console(),
+                confidence=1,
+            )
 
         return Action(suggested_command=state.command)

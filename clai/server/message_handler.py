@@ -58,13 +58,10 @@ class MessageHandler:
             return [Action()]
 
         command_runner = self.command_runner_factory \
-            .provide_command_runner(message.command, self.agent_runner)
+                .provide_command_runner(message.command, self.agent_runner)
 
         action = command_runner.execute(message)
-        if isinstance(action, Action):
-            return [action]
-
-        return action
+        return [action] if isinstance(action, Action) else action
 
     def __process_command(self, message: State) -> Action:
         if not message.is_already_processed():
@@ -78,7 +75,7 @@ class MessageHandler:
                 actions,
                 message.user_name)
         else:
-            logger.info(f"we have pending action")
+            logger.info("we have pending action")
             action = self.server_pending_actions_datasource.get_next_action(message.command_id, message.user_name)
 
         if action is None:
@@ -115,22 +112,24 @@ class MessageHandler:
         return Action(origin_command=message.command)
 
     def find_value(self, lines, message: State) -> Optional[int]:
-        for i in reversed(range(len(lines))):
-            if self.message_executed(lines[i], message):
-                return i
-        return None
+        return next(
+            (
+                i
+                for i in reversed(range(len(lines)))
+                if self.message_executed(lines[i], message)
+            ),
+            None,
+        )
 
     def complete_history(self, message: State):
         lines = read_history()
 
-        index = self.find_value(lines, message)
-
-        if index:
+        if index := self.find_value(lines, message):
             last_values = lines[index::]
             message.values_executed = last_values
 
             if message.action_suggested.suggested_command \
-                    and message.action_suggested.suggested_command in last_values[0]:
+                        and message.action_suggested.suggested_command in last_values[0]:
                 message.suggested_executed = True
         else:
             message.values_executed = []

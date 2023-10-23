@@ -48,10 +48,7 @@ class ManPageAgent(Agent):
 
         r = requests.post(self._API_URL, params=payload, headers=headers)
 
-        if r.status_code == 200:
-            return r.json()
-
-        return None
+        return r.json() if r.status_code == 200 else None
 
     def get_next_action(self, state: State) -> Action:
 
@@ -83,12 +80,12 @@ class ManPageAgent(Agent):
         try:
             cmd_tldr = tldr_wrapper.get_command_tldr(command)
         except Exception as err:
-            print('Exception: ' + str(err))
+            print(f'Exception: {str(err)}')
             cmd_tldr = ''
 
         return Action(
-            suggested_command="man {}".format(command),
+            suggested_command=f"man {command}",
             confidence=confidence,
-            description=cmd_tldr
+            description=cmd_tldr,
         )
 

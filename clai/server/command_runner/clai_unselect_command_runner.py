@@ -28,8 +28,9 @@ class ClaiUnselectCommandRunner(CommandRunner):
 
         plugin_to_select = extract_quoted_agent_name(plugin_to_select)
 
-        selected = self.agent_datasource.unselect_plugin(plugin_to_select, state.user_name)
-        if selected:
+        if selected := self.agent_datasource.unselect_plugin(
+            plugin_to_select, state.user_name
+        ):
             self.stats_tracker.log_deactivate_skills(state.user_name, plugin_to_select)
             plugins_config = self.config_storage.read_config(state.user_name)
             if plugins_config.selected is not None and selected.name in plugins_config.selected:

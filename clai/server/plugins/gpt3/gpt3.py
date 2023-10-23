@@ -60,5 +60,5 @@ class GPT3(Agent):
                 confidence=0.0)
 
         except Exception as ex:
-            return [ { "text" : "Method failed with status " + str(ex) }, 0.0 ]
+            return [{"text": f"Method failed with status {str(ex)}"}, 0.0]
 

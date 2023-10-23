@@ -52,7 +52,7 @@ def launcher_server(host, port, directive, websocket):
         else:
             print('The server is up yet')
     if directive == START_DIRECTIVE:
-        print(f"starting CLAI")
+        print("starting CLAI")
         while is_port_busy(host, port, True):
             print('')
         create_server_socket(host, port, websocket)

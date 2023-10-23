@@ -61,7 +61,7 @@ class ActionRemoteStorage:
         logger.info("----STOP CONSUMING-----")
 
     def start(self, agent_datasource: AgentDatasource):
-        logger.info(f"-Start sender-")
+        logger.info("-Start sender-")
         self.report_enable = agent_datasource.get_report_enable()
         if self.report_enable:
             self.consumer_task = self.pool.map_async(self.consumer, (self.queue,))

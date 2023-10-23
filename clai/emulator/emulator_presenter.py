@@ -29,10 +29,7 @@ class EmulatorPresenter:
     @staticmethod
     def __get_base_path():
         root_path = os.getcwd()
-        if 'bin' in root_path:
-            return '../'
-
-        return '.'
+        return '../' if 'bin' in root_path else '.'
 
     def select_skill(self, skill_name: str):
         if skill_name == self.current_active_skill:
@@ -76,8 +73,7 @@ class EmulatorPresenter:
 
 
     def retrieve_messages(self, add_row):
-        reply = self.emulator_docker_bridge.retrieve_message()
-        if reply:
+        if reply := self.emulator_docker_bridge.retrieve_message():
             if reply.docker_reply == 'skills':
                 skills_as_array = reply.message.splitlines()
                 self.on_skills_ready(skills_as_array[2:-1])

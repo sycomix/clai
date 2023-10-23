@@ -33,8 +33,4 @@ class QuestionDetection(object):
             return True
 
         doc = self.nlp(text)
-        for token in doc:
-            if token.tag_ in self.WH_TAGS:
-                return True
-
-        return False
+        return any(token.tag_ in self.WH_TAGS for token in doc)

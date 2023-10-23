@@ -44,10 +44,9 @@ def identify_sections(sentences: list):
             else:
                 empty_sentence += 1
 
-    sections = list()
+    sections = []
     for segment in segments:
-        sentences = list(filter(None, segment))
-        if sentences:
+        if sentences := list(filter(None, segment)):
             sections.append(' '.join([sentences for sentences in segment if sentences]))
 
     return sections
@@ -66,12 +65,11 @@ def load_manpages(print_every=1e3) -> dict:
     files = pathlib.Path('./data/manpages/').glob("*.txt")
     for idx, f in enumerate(files):
         with open(f, 'r') as fp:
-            content = parse_manpage(fp.readlines())
-            if content:
+            if content := parse_manpage(fp.readlines()):
                 documents[f.name.split(".txt")[0]] = content
 
         if idx % print_every == 0:
-            msg = "Finished processing {} manpages.".format(idx)
+            msg = f"Finished processing {idx} manpages."
             logging.info(msg)
     return documents
 

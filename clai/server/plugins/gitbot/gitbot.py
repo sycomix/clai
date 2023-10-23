@@ -39,7 +39,7 @@ class GITBOT(Agent):
 
     def save_agent(self) -> bool:
         # KILL THE RASA SERVER
-        os.system('lsof -t -i tcp:{} | xargs kill'.format(_rasa_port_number))
+        os.system(f'lsof -t -i tcp:{_rasa_port_number} | xargs kill')
 
         # return to original destruction method
         super().save_agent()

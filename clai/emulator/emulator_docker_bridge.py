@@ -31,7 +31,7 @@ class EmulatorDockerBridge:
             self.queue_out)
 
     def start(self):
-        print(f"-Start docker bridge-")
+        print("-Start docker bridge-")
         self.emulator_docker_log_conector.start()
         self.consumer_messages = self.pool.map_async(
             __consumer__,
@@ -67,19 +67,14 @@ class EmulatorDockerBridge:
 
     def retrieve_message(self) -> Optional[DockerReply]:
         try:
-            message = self.queue_out.get(block=False)
-            return message
-        # pylint: disable=bare-except
+            return self.queue_out.get(block=False)
         except:
             return None
 
 
 def get_base_path():
     root_path = os.getcwd()
-    if 'bin' in root_path:
-        return '../'
-
-    return '.'
+    return '../' if 'bin' in root_path else '.'
 
 
 def __get_image(docker_client):
@@ -165,11 +160,13 @@ def __consumer__(args):
             my_clai = __start_docker()
             log_queue.put(DockerMessage(docker_command='start_logger', message=my_clai.name))
 
-        elif docker_message.docker_command == 'send_message' \
-                or docker_message.docker_command == 'request_skills' \
-                or docker_message.docker_command == 'unselect_skill' \
-                or docker_message.docker_command == 'refresh' \
-                or docker_message.docker_command == 'select_skill':
+        elif docker_message.docker_command in [
+            'send_message',
+            'request_skills',
+            'unselect_skill',
+            'refresh',
+            'select_skill',
+        ]:
             if my_clai:
                 print(f'socket {socket}')
                 if not socket:
@@ -186,8 +183,10 @@ def __consumer__(args):
                 stdout = read(socket)
 
                 reply = None
-                if docker_message.docker_command == 'request_skills' \
-                        or docker_message.docker_command == 'unselect_skill':
+                if docker_message.docker_command in [
+                    'request_skills',
+                    'unselect_skill',
+                ]:
                     reply = DockerReply(docker_reply='skills', message=stdout)
                 elif docker_message.docker_command == 'send_message':
                     socket.output._sock.send("clai last-info\n".encode())

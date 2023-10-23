@@ -55,8 +55,7 @@ class Voice(Agent):
         stderr = str(state.stderr)
         prompt = stderr.split('\n')[0]
         gpt_summary = self._gpt_api.get_top_reply(prompt, strip_output_suffix=True)
-        summary = f"error. {gpt_summary}"
-        return summary
+        return f"error. {gpt_summary}"
 
     def synthesize(self, text):
         """ Converts text to audio and saves to temp file """

@@ -82,7 +82,7 @@ def createInstallDir(directory):
             print(f"creating install directory: {directory}")
             os.makedirs(directory, exist_ok=True)
         else:
-            print(f"Install directory already exists")
+            print("Install directory already exists")
     except Exception as e:
         print(e)
         sys.exit(1)
@@ -130,9 +130,7 @@ def install(repo_path: str, install_path: str):
         print(e)
         sys.exit(1)
 
-    download_file(
-        URL_BASH_PREEXEC, filename="%s/%s" % (install_path, BASH_PREEXEC)
-    )
+    download_file(URL_BASH_PREEXEC, filename=f"{install_path}/{BASH_PREEXEC}")
 
     register_the_user(install_path, False)
     append_setup_to_file(get_setup_file(), install_path, DEFAULT_PORT)

@@ -10,6 +10,7 @@
 '''
 This is a barebones implementation of what a closed-loop executor for a domain like IBM cloud might look like.
 '''
+
 from clai.server.command_message import Action, NOOP_COMMAND
 import json, copy, os, re, threading
 
@@ -20,9 +21,9 @@ from clai.server.plugins.ibmcloud.planners import get_plan_from_pr2plan
 globals
 '''
 _real_path = '/'.join(os.path.realpath(__file__).split('/')[:-1])
-_path_to_domain_file = _real_path + '/planning-files/domain.pddl'
-_path_to_problem_template = _real_path + '/planning-files/template.pddl'
-_path_to_yaml_temnplate = _real_path + '/sample-application-files/app.yaml'
+_path_to_domain_file = f'{_real_path}/planning-files/domain.pddl'
+_path_to_problem_template = f'{_real_path}/planning-files/template.pddl'
+_path_to_yaml_temnplate = f'{_real_path}/sample-application-files/app.yaml'
 
 '''
 class :: track state of the user
@@ -88,8 +89,6 @@ class KubeTracker():
         elif 'ibmcloud cr namespaces' in command:
             self.namespace = re.findall(r'Namespace\s+\n\w+', stdout)[0].strip().split('\n')[-1]
 
-        else: pass
-
     def add_observation(self, obs: str):
         self.obs.append(obs)
         return self
@@ -115,9 +114,6 @@ class KubeTracker():
         elif utterance == 'build yaml':
             self.goal = '(known yaml)'
 
-        # this is going to return an empty plan
-        else: pass
-
         return self
 
 '''
@@ -131,15 +127,15 @@ class KubeExe(KubeTracker):
 
     def get_plan(self) -> list:
         problem = copy.deepcopy(self.template).replace('<GOAL>', self.goal)
-        plan = get_plan_from_pr2plan(domain=self.domain, problem=problem, obs=self.get_observations())
-        return plan
+        return get_plan_from_pr2plan(
+            domain=self.domain, problem=problem, obs=self.get_observations()
+        )
 
     def execute_action(self, action: str) -> str:
         try:
 
-            command = getattr(self, action.replace('-', '_'))()
-            if command: return command
-
+            if command := getattr(self, action.replace('-', '_'))():
+                return command
         except Exception as e:
             print(e)
 
@@ -151,7 +147,7 @@ class KubeExe(KubeTracker):
         return None
 
     def docker_build(self):
-        command = 'docker build -t {}:{} .'.format(self.name, self.tag)
+        command = f'docker build -t {self.name}:{self.tag} .'
         return Action(suggested_command=command, confidence=1.0, execute=False)
 
     def dockerfile_read(self):
@@ -163,7 +159,7 @@ class KubeExe(KubeTracker):
         return None
 
     def docker_run(self):
-        command = 'docker run -i -p {}:{} -d {}:{}'.format(self.host_port, self.local_port, self.name, self.tag)
+        command = f'docker run -i -p {self.host_port}:{self.local_port} -d {self.name}:{self.tag}'
         return Action(suggested_command=command, confidence=1.0)
 
     def ibmcloud_login(self):
@@ -182,14 +178,14 @@ class KubeExe(KubeTracker):
 
         if not self.namespace: self.namespace = "<enter-namespace>"
 
-        command = 'docker tag {}:{} us.icr.io/{}/{}:{}'.format(self.name, self.tag, self.namespace, self.name, self.tag)
+        command = f'docker tag {self.name}:{self.tag} us.icr.io/{self.namespace}/{self.name}:{self.tag}'
         return Action(suggested_command=command, confidence=1.0, execute=False)
 
     def docker_push(self):
 
         if not self.namespace: self.namespace = "<enter-namespace>"
 
-        command = 'docker push us.icr.io/{}/{}:{}'.format(self.namespace, self.name, self.tag)
+        command = f'docker push us.icr.io/{self.namespace}/{self.name}:{self.tag}'
         return Action(suggested_command=command, confidence=1.0, execute=False)
 
     def list_images(self):
@@ -200,7 +196,7 @@ class KubeExe(KubeTracker):
         return None
 
     def ibmcloud_delete_image(self):
-        command = 'ibmcloud cr image-rm us.icr.io/{}/'.format(self.namespace, self.image_to_remove)
+        command = f'ibmcloud cr image-rm us.icr.io/{self.namespace}/'
         return Action(suggested_command=command, confidence=1.0)
 
     def check_account_free(self):
@@ -222,13 +218,13 @@ class KubeExe(KubeTracker):
         # write to yaml file for deployment
         app_yaml = open(_path_to_yaml_temnplate, 'r').read()
         app_yaml = app_yaml.replace('{name}', self.name) \
-            .replace('{tag}', self.tag) \
-            .replace('{namespace}', self.namespace) \
-            .replace('{protocol}', self.protocol) \
-            .replace('{host_port}', self.host_port) \
-            .replace('{local_port}', self.local_port)
+                .replace('{tag}', self.tag) \
+                .replace('{namespace}', self.namespace) \
+                .replace('{protocol}', self.protocol) \
+                .replace('{host_port}', self.host_port) \
+                .replace('{local_port}', self.local_port)
 
-        with open(_real_path + '/app.yaml', 'w') as f:
+        with open(f'{_real_path}/app.yaml', 'w') as f:
             f.write(app_yaml)
 
         self.yaml = app_yaml
@@ -238,9 +234,9 @@ class KubeExe(KubeTracker):
 
         if not self.cluster_name: self.cluster_name = "<enter-cluster-name>"
 
-        command = 'ibmcloud ks cluster-config {} | grep -e "export" | echo'.format(self.cluster_name)
+        command = f'ibmcloud ks cluster-config {self.cluster_name} | grep -e "export" | echo'
         return Action(suggested_command=command, confidence=1.0)
 
     def kube_deploy(self):
-        command = 'kubectl apply -f {}'.format(_path_to_yaml_temnplate)
+        command = f'kubectl apply -f {_path_to_yaml_temnplate}'
         return Action(suggested_command=command, confidence=1.0)

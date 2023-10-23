@@ -44,8 +44,7 @@ class SocketClientConnector(ClientConnector):
     def _internal_send(self, command_to_send):
         self.start_connections(self.host, int(self.port))
         self.write(command_to_send)
-        action = self.read()
-        if action:
+        if action := self.read():
             return action
 
         return Action(
@@ -83,11 +82,8 @@ class SocketClientConnector(ClientConnector):
         if events and events[0]:
             key = events[0][0]
             client_socket = key.fileobj
-            received_data = client_socket.recv(4024)
-            if received_data:
-                message = process_message(received_data)
-                return message
-
+            if received_data := client_socket.recv(4024):
+                return process_message(received_data)
         return None
 
     def close(self):

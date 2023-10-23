@@ -17,17 +17,12 @@ class StackExchange(Provider):
         self.__log_debug__("UNIX StackExchange provider initialized")
 
     def call(self, query: str, limit: int = 1, **kwargs):
-        self.__log_debug__(
-            f"call(query={query}, limit={str(limit)}), **kwargs={str(kwargs)})"
-        )
+        self.__log_debug__(f"call(query={query}, limit={limit}), **kwargs={kwargs})")
 
         payload = {"text": query, "limit": limit}
 
         request = self.__send_post_request__(self.base_uri, data=json.dumps(payload))
-        if request.status_code == 200:
-            return request.json()["hits"]
-
-        return None
+        return request.json()["hits"] if request.status_code == 200 else None
 
     def extract_search_result(self, data: List[Dict]) -> str:
         return data[0]["Answer"]

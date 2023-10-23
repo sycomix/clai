@@ -75,10 +75,9 @@ class Agent(ABC):
             self.__prepare_state_folder__()
 
             for var_name, var_val in state.items():
-                with open('{}/{}.p'.format(self._save_dirpath, var_name), 'wb') as file:
+                with open(f'{self._save_dirpath}/{var_name}.p', 'wb') as file:
                     pickle.dump(var_val, file)
 
-        # pylint: disable=broad-except
         except Exception:
             return False
         else:

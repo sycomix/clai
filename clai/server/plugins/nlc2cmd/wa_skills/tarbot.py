@@ -62,32 +62,36 @@ def wa_skill_processor_tarbot(msg):
 
     # Configure command based on intent
 
-    intents = {'check-size': {"text": "Try >> tar -czf - {} | wc -c".format(filename)},
-               'check-validity': {"text": "Try >> tar tvfW {}".format(filename)},
-               'tar-usage': {"text": "Tar Usage and Options: \nc - create a archive file. "
-                                     "\nx - extract a archive file. \nv - show the progress of archive file. "
-                                     "\nf - filename of archive file. \nt - viewing content of archive file.  "
-                                     "\nj - filter archive through bzip2.  \nz - filter archive through gzip. "
-                                     "\nr - append or update files or directories to existing archive file.  "
-                                     "\nW - Verify a archive file.  wildcards - Specify patterns in unix tar "
-                                     "command."}}
+    intents = {
+        'check-size': {"text": f"Try >> tar -czf - {filename} | wc -c"},
+        'check-validity': {"text": f"Try >> tar tvfW {filename}"},
+        'tar-usage': {
+            "text": "Tar Usage and Options: \nc - create a archive file. "
+            "\nx - extract a archive file. \nv - show the progress of archive file. "
+            "\nf - filename of archive file. \nt - viewing content of archive file.  "
+            "\nj - filter archive through bzip2.  \nz - filter archive through gzip. "
+            "\nr - append or update files or directories to existing archive file.  "
+            "\nW - Verify a archive file.  wildcards - Specify patterns in unix tar "
+            "command."
+        },
+    }
 
     if intent in intents:
         data = intents[intent]
 
     elif intent == "tar-directory-to-file":
-        flags = "c{}f".format(flags) 
-        data = {"text": "Try >> tar -{} {} {}".format(flags, filename, dirname)}
+        flags = f"c{flags}f"
+        data = {"text": f"Try >> tar -{flags} {filename} {dirname}"}
 
     elif intent == "untar-file-to-directory":
-        flags = "x{}f".format(flags) 
+        flags = f"x{flags}f"
         if 'directory-name' in entities:
-            data = {"text": "Try >> tar -{} {} -C {}".format(flags, filename, dirname)}
+            data = {"text": f"Try >> tar -{flags} {filename} -C {dirname}"}
         else:
-            data = {"text": "Try >> tar -{} {}".format(flags, filename)}
+            data = {"text": f"Try >> tar -{flags} {filename}"}
 
     elif intent == "untar-group-of-files":
-        flags = "x{}f".format(flags) 
+        flags = f"x{flags}f"
         ext = []
 
         if 'file-extension' in entities:
@@ -99,12 +103,13 @@ def wa_skill_processor_tarbot(msg):
             ext = [".ext"]
 
         if 'directory-name' in entities:
-            data = {"text": "Try >> tar -{} {} --wildcards {} -C {}".format(flags, filename,
-                                                                           ' '.join(["*" + e for e in ext]),
-                                                                           dirname)}
+            data = {
+                "text": f"""Try >> tar -{flags} {filename} --wildcards {' '.join(["*" + e for e in ext])} -C {dirname}"""
+            }
         else:
             data = {
-                "text": "Try >> tar -{} {} --wildcards {}".format(flags, filename, ' '.join(["*" + e for e in ext]))}
+                "text": f"""Try >> tar -{flags} {filename} --wildcards {' '.join(["*" + e for e in ext])}"""
+            }
 
     elif intent == "untar-single-file":
         flags = "x{}f".format(flags) 
@@ -142,8 +147,6 @@ def wa_skill_processor_tarbot(msg):
             data = {"text": "Try >> tar -{} {}".format(flags, filename)}
         else:
             data = {"text": "Try >> tar -{} {} '{}'".format(flags, filename, ' '.join(["*" + e for e in ext]))}
-
-    else: pass
 
     return data, confidence
 

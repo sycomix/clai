@@ -16,17 +16,12 @@ class Manpages(Provider):
         self.__log_debug__("Manpages provider initialized")
 
     def call(self, query: str, limit: int = 1, **kwargs):
-        self.__log_debug__(
-            f"call(query={query}, limit={str(limit)}), **kwargs={str(kwargs)})"
-        )
+        self.__log_debug__(f"call(query={query}, limit={limit}), **kwargs={kwargs})")
 
         payload = {"text": query, "result_count": limit}
 
         request = self.__send_post_request__(self.base_uri, params=payload)
-        if request.status_code == 200:
-            return request.json()
-
-        return None
+        return request.json() if request.status_code == 200 else None
 
     def extract_search_result(self, data: List[Dict]) -> str:
         pass

@@ -24,8 +24,7 @@ class Anonymizer:
             return self.alternate_path
 
         base_dir = os.path.dirname(clai.tools.__file__)
-        filename = os.path.join(base_dir, '../../anonymize.json')
-        return filename
+        return os.path.join(base_dir, '../../anonymize.json')
 
     def anonymize(self, key: str) -> str:
         if not self.__cache:

@@ -54,6 +54,6 @@ def wa_skill_processor_cloudbot(msg):
         intent = "generic"
         confidence = 0.0
 
-    data = { "text" : "Try >> ibmcloud " + __intents[intent] } 
+    data = {"text": f"Try >> ibmcloud {__intents[intent]}"}
     return data, confidence
 

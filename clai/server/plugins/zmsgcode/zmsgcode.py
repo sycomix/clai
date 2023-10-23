@@ -43,16 +43,16 @@ class MsgCodeAgent(Agent):
     def post_execute(self, state: State) -> Action:
 
         logger.info("==================== In zMsgCode Bot:post_execute ============================")
-        logger.info("State:\n\tCommand: {}\n\tError Code: {}\n\tStderr: {}".format(state.command,
-                                                                                   state.result_code,
-                                                                                   state.stderr))
+        logger.info(
+            f"State:\n\tCommand: {state.command}\n\tError Code: {state.result_code}\n\tStderr: {state.stderr}"
+        )
         logger.info("============================================================================")
-        
+
         if state.result_code == '0':
             return Action(suggested_command=state.command)
-        
+
         stderr = state.stderr.strip()
-        
+
         # This bot should be triggered if the message on STDERR resembles an
         # IBM z Systems message ID.  For example:
         #   FSUM8977 cp: source "test.txt" and target "test.txt" are identical
@@ -62,66 +62,65 @@ class MsgCodeAgent(Agent):
         if matches is None:
             logger.info(f"No Z message ID found in '{stderr}'")
             return Action(suggested_command=state.command)
-        
+
         logger.info(f"Analyzing error message '{matches[0]}'")
         msgid:str = matches[2]  # Isolate the message ID
         helpWasFound = False
-        
+
         # If this message contains data which can be parsed by bpxmtext, then
         # try calling bpxmtext to get a string describing the error
         bpx_matches:List[str] = self.__search(matches[0], REGEX_BPX)
         if bpx_matches is not None:
             reason_code:str = bpx_matches[1]
             logger.info(f"==> Reason Code: {reason_code}")
-            
+
             # Call bpmxtext to get info about that message
             result:CompletedProcess = subprocess.run(["bpxmtext", reason_code], stdout=subprocess.PIPE)
             if result.returncode == 0:
                 messageText = result.stdout.decode('UTF8')
-                
+
                 # If bpmxtext's response is actually something useful, use it
                 if self.__search(messageText, REGEX_BPX_BADANSWER) is None:
                     suggested_command=state.command
                     description=Colorize() \
-                        .emoji(Colorize.EMOJI_ROBOT) \
-                        .append(f"I asked bpxmtext about that message:\n") \
-                        .info() \
-                        .append(messageText) \
-                        .warning() \
-                        .to_console()
+                            .emoji(Colorize.EMOJI_ROBOT) \
+                            .append(f"I asked bpxmtext about that message:\n") \
+                            .info() \
+                            .append(messageText) \
+                            .warning() \
+                            .to_console()
                     helpWasFound = True # Mark that help was indeed found
-            
+
         # If this message wasn't one we could send to bpxmtext, or if bpxmtext
         # didn't return a meaningful message, try searching the KnowledgeCenter
         if not helpWasFound:
             kc_api:Provider = self.store.get_apis()['ibm_kc']
             if kc_api is not None and kc_api.can_run_on_this_os(): 
-                data = self.store.search(msgid, service='ibm_kc', size=1) 
-                if data:
+                if data := self.store.search(msgid, service='ibm_kc', size=1):
                     logger.info(f"==> Success!!! Found information for msgid {msgid}")
                     suggested_command=state.command
                     description=Colorize() \
-                        .emoji(Colorize.EMOJI_ROBOT) \
-                        .append(
+                            .emoji(Colorize.EMOJI_ROBOT) \
+                            .append(
                             f"I looked up {msgid} in the IBM KnowledgeCenter for you:\n") \
-                        .info() \
-                        .append(kc_api.get_printable_output(data)) \
-                        .warning() \
-                        .to_console()
+                            .info() \
+                            .append(kc_api.get_printable_output(data)) \
+                            .warning() \
+                            .to_console()
                     helpWasFound = True # Mark that help was indeed found
-            
+
         if not helpWasFound:
             logger.info("Failure: Unable to be helpful")
             logger.info("============================================================================")
-            
+
             suggested_command=NOOP_COMMAND
             description=Colorize() \
-                .emoji(Colorize.EMOJI_ROBOT) \
-                .append(
+                    .emoji(Colorize.EMOJI_ROBOT) \
+                    .append(
                     f"I couldn't find any help for message code '{msgid}'\n") \
-                .info() \
-                .to_console()
-                
+                    .info() \
+                    .to_console()
+
         return Action(suggested_command=suggested_command,
                       description=description,
                       confidence=1.0)

@@ -68,7 +68,7 @@ class StatsTracker:
         logger.info("----STOP CONSUMING-----")
 
     def start(self, agent_datasource: AgentDatasource):
-        logger.info(f"-Start tracker-")
+        logger.info("-Start tracker-")
         self.report_enable = agent_datasource.get_report_enable()
         if self.report_enable:
             self.consumer_stats = self.pool.map_async(self.consumer, (self.queue,))
